@@ -2,6 +2,7 @@ from langchain_ollama.llms import OllamaLLM
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from langchain_community.vectorstores import Chroma
 
 #define llm model
 def llm_model ():
@@ -35,7 +36,7 @@ def embeddings():
         return None
 
 #define PDF loader
-def pdf_loader(file_path):
+def document_loader(file_path):
     
     try:
         if not file_path:
@@ -81,5 +82,25 @@ def text_splitters(data, chunk_size, chunk_overlap):
         print(f"Unknown error: {e}")
         return None
     
+
+#define vector database
+def vector_database(documents, embedding_model):
     
+    try:
+        if documents is None:
+            raise ValueError("document is empty or None")
+        
+        chroma_db = Chroma.from_documents(documents=documents,
+                                          embedding=embedding_model,
+                                          persist_directory="chroma_db")
+        
+        return chroma_db
+        
+    except ValueError as e:
+        print(f"value error: {e}")
+        return None
+    
+    except Exception as e:
+        print(f"Unknown error: {e}")
+        return None
     
