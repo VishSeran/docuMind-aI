@@ -8,6 +8,10 @@ import gradio as gr
 def retriever_qa(file_path, query):
 
     try:
+        
+        if isinstance(file_path,dict):
+            file_path = file_path.get("path") or file_path.get("name")
+        
         if not file_path:
             raise ValueError("file path in invalid or none")
         
@@ -32,8 +36,8 @@ def retriever_qa(file_path, query):
         qa_chain = create_retrieval_chain(retriever=retriever_obj,
                                           combine_docs_chain=doc_chain)
         
-        response = qa_chain.invoke(input={"input":query})
-        return response['answer']
+        response = qa_chain.invoke({"input":query})
+        return response.get("answer") or response.get("result") or str(response)
     
     except ValueError as e:
         print(f"value error: {e}")
@@ -46,13 +50,18 @@ def retriever_qa(file_path, query):
 def gradio_interface():
 
     interface = gr.Interface(
-        fn=retriever_qa(),
+        fn=retriever_qa,
         inputs=[
             gr.File(label="Upload PDF File", 
-                    file_count="multiple", file_types=['.pdf'],type="filepath"),
+                    file_count="single", file_types=['.pdf'],type="filepath"),
             gr.TextArea(label="Input Query",placeholder="What's in your mind...")
         ],
         outputs= gr.TextArea(label="Response", placeholder="Waiting for response..."),
         title="DocuMind AI",
         description="Upload a PDF document and ask any question. The chatbot will try to answer using the provided document."
     )
+    
+    interface.launch(share=True)
+    
+if __name__ == "__main__":
+    gradio_interface()
