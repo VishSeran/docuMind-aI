@@ -107,13 +107,15 @@ def vector_database(documents, embedding_model):
         print(f"Unknown error: {e}")
         return None
     
-def retriever_call(documents,parent_chunk_size=2000, 
+def retriever_call(file_path,parent_chunk_size=2000, 
             parent_chunk_overlap=400, child_chunk_size=500, child_chunk_overlap=50):
     
     try:
         
-        if not documents:
+        if not file_path:
             raise ValueError ("Document is empty or none")
+        
+        documents = document_loader(file_path)
         
         parent_splitter = RecursiveCharacterTextSplitter(chunk_size = parent_chunk_size,
                                                 chunk_overlap=parent_chunk_overlap,
@@ -148,3 +150,4 @@ def retriever_call(documents,parent_chunk_size=2000,
     except Exception as e:
         print(f"unknown error: {e}")
         return None
+    
