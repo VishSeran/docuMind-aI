@@ -2,6 +2,7 @@ from src.utilities import llm_model, retriever_call
 from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_classic.chains.retrieval import create_retrieval_chain
 from langchain_core.prompts import ChatPromptTemplate
+import gradio as gr
 
 
 def retriever_qa(file_path, query):
@@ -41,3 +42,17 @@ def retriever_qa(file_path, query):
     except Exception as e:
         print(f"unknown error:{e}")
         return None
+    
+def gradio_interface():
+
+    interface = gr.Interface(
+        fn=retriever_qa(),
+        inputs=[
+            gr.File(label="Upload PDF File", 
+                    file_count="multiple", file_types=['.pdf'],type="filepath"),
+            gr.TextArea(label="Input Query",placeholder="What's in your mind...")
+        ],
+        outputs= gr.TextArea(label="Response", placeholder="Waiting for response..."),
+        title="DocuMind AI",
+        description="Upload a PDF document and ask any question. The chatbot will try to answer using the provided document."
+    )
