@@ -3,6 +3,9 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
+from langchain_text_splitters import CharacterTextSplitter
+from langchain_core.stores import InMemoryStore
+from langchain.retrievers import ParentDocumentRetriever
 
 #define llm model
 def llm_model ():
@@ -104,3 +107,44 @@ def vector_database(documents, embedding_model):
         print(f"Unknown error: {e}")
         return None
     
+def retriever_call(documents,parent_chunk_size=2000, 
+            parent_chunk_overlap=400, child_chunk_size=500, child_chunk_overlap=50):
+    
+    try:
+        
+        if not documents:
+            raise ValueError ("Document is empty or none")
+        
+        parent_splitter = RecursiveCharacterTextSplitter(chunk_size = parent_chunk_size,
+                                                chunk_overlap=parent_chunk_overlap,
+                                                length_function=len)
+        
+        child_splitter = RecursiveCharacterTextSplitter(chunk_size = child_chunk_size,
+                                                chunk_overlap=child_chunk_overlap,
+                                                length_function=len)
+        
+        embedding_model = embeddings()
+        
+        vectore_store = Chroma(
+            collection_name="split_parent", embedding_function=embedding_model
+        )
+        
+        doc_store = InMemoryStore()
+        
+        retriever = ParentDocumentRetriever(
+            vectorstore=vectore_store,
+            docstore=doc_store,
+            parent_splitter=parent_splitter,
+            child_splitter=child_splitter
+        )
+        
+        retriever.add_documents(documents=documents)
+        return retriever
+    
+    except ValueError as e:
+        print(f"value error: {e}")
+        return None
+    
+    except Exception as e:
+        print(f"unknown error: {e}")
+        return None
